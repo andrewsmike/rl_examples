@@ -295,7 +295,6 @@ def display_group_performance(
 
         logging.info(f"[{agent_name}] Mean test episode return: {test_mean}")
 
-    """
     display_runs(
         setting_runs=np.array([
             [
@@ -310,7 +309,6 @@ def display_group_performance(
         title=f"Estimated epoch return mean.",
         show=True,
     )
-    """
         
 
 

@@ -341,7 +341,7 @@ class SARSAOnPolicyTDZeroAgent(TDZeroEGreedyAgent):
             self.alpha * td_error
         )
         
-class ESARSAOnPolicyTDZeroAgent(TDZeroEGreedyAgent):
+class ESARSAOffPolicyTDZeroAgent(TDZeroEGreedyAgent):
     def __init__(
             self, 
             *args,
@@ -491,7 +491,7 @@ class SARSAOnPolicyTDNStepAgent(TDNStepEGreedyPolicyAgent):
             self.alpha * n_step_td_error
         )
 
-class ESARSAOnPolicyTDNStepAgent(TDNStepEGreedyPolicyAgent):
+class ESARSAOffPolicyTDNStepAgent(TDNStepEGreedyPolicyAgent):
     def __init__(
             self,
             *args,
@@ -542,6 +542,70 @@ class ESARSAOnPolicyTDNStepAgent(TDNStepEGreedyPolicyAgent):
 
         self.state_action_value[first_observation][first_action] += (
             self.alpha * n_step_td_error
+        )
+
+def tree_backup_returns(
+        state_action_value,
+        policy_func,
+        trace,
+        gamma,
+):
+    t = sum(
+        reward + (gamma ** trace_index) * sum(
+            policy_func(state, other_action) * other_action_value
+            for other_action, other_action_value in state_action_value[state].items()
+            if (other_action != taken_action) or (trace_index == (len(trace) - 1))
+        )
+        for trace_index, (state, taken_action, reward) in enumerate(trace)
+    )
+
+    return t
+
+
+def egreedy_policy_probs_func(state_action_value, exploration_rate):
+
+    def egreedy_policy_prob(state, action):
+        action_values = state_action_value[state]
+        state_best_action = best_action(action_values)
+        return (
+            (1 - exploration_rate)
+            if action == state_best_action else
+            exploration_rate / len(action_values)
+        )
+
+    return egreedy_policy_prob
+
+class TreeBackupOffPolicyTDNStepAgent(TDNStepEGreedyPolicyAgent):
+    def __init__(
+            self,
+            *args,
+            **kwargs,
+    ):
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+    def learn(self, trace):
+        first_observation, first_action, first_reward = trace[0]
+
+        tree_backup_return_est = tree_backup_returns(
+            self.state_action_value,
+            policy_func=egreedy_policy_probs_func(
+                self.state_action_value,
+                self.exploration_rate,
+            ),
+            trace=trace,
+            gamma=self.gamma,
+        )
+
+        tree_td_error = (
+            tree_backup_return_est
+            - self.state_action_value[first_observation][first_action]
+        )
+
+        self.state_action_value[first_observation][first_action] += (
+            self.alpha * tree_td_error
         )
 
 # TODO: Do learning _before_ action selection, like in canonical algos, rather

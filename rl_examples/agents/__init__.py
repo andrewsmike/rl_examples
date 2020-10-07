@@ -9,14 +9,15 @@ from rl_examples.agents.baseline import (
 )
 from rl_examples.agents.discrete import (
     DiscritizingWrapperAgent,
-    ESARSAOnPolicyTDZeroAgent,
-    ESARSAOnPolicyTDNStepAgent,
+    ESARSAOffPolicyTDZeroAgent,
+    ESARSAOffPolicyTDNStepAgent,
     FirstVisitOnPolicyMCControlAgent,
     QLearningOffPolicyTDNStepAgent,
     QLearningOffPolicyTDZeroAgent,
     SARSAOnPolicyTDLambdaAgent,
     SARSAOnPolicyTDNStepAgent,
     SARSAOnPolicyTDZeroAgent,
+    TreeBackupOffPolicyTDNStepAgent,
 )
 
 from rl_examples.discritizer import GridDiscritizer
@@ -35,8 +36,9 @@ agent_name_func = {
     "qlearning_nstep": QLearningOffPolicyTDNStepAgent,
 
     # TD control w/ expected(action_values) update rule.
-    "esarsa": ESARSAOnPolicyTDZeroAgent,
-    "esarsa_nstep": ESARSAOnPolicyTDNStepAgent,
+    "esarsa": ESARSAOffPolicyTDZeroAgent,
+    "esarsa_nstep": ESARSAOffPolicyTDNStepAgent,
+    "tree_nstep": TreeBackupOffPolicyTDNStepAgent,
 
     # TD control w/ sampled(action_value) update rule.
     "sarsa": SARSAOnPolicyTDZeroAgent,
@@ -52,6 +54,7 @@ discrete_agent_names = {
 
     "esarsa",
     "esarsa_nstep",
+    "tree_nstep",
 
     "sarsa",
     "sarsa_nstep",
